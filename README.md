@@ -1,25 +1,18 @@
 # Vite: `addWatchFile` in `load` is lost on a module's first request
 
-![Step by step: the load hook calls addWatchFile before the module node exists, so Vite drops color.txt. After color.txt changes, only the stylesheet that calls addWatchFile in transform updates. Expected both boxes lightblue, actual: the load box stays hotpink](hmr.gif)
+![Step by step: the load hook calls addWatchFile before the module node exists, so Vite drops color.txt. After color.txt changes, Vite sends no update. Expected: the box turns lightblue. Actual: it stays hotpink](hmr.gif)
 
-`index.html` links two stylesheets. A plugin in `vite.config.js` makes both from `color.txt`, a file with one color, and calls `this.addWatchFile("color.txt")` for each. The only difference is the hook that makes the call. When `color.txt` changes, both boxes should take the new color.
+`index.html` links the stylesheet `/color.css`. A plugin in `vite.config.js` makes it from `color.txt`, a file with one color, and calls `this.addWatchFile("color.txt")` in `load`. When `color.txt` changes, the box should take the new color. It keeps the old one.
 
 ## Step by step
 
 The same steps as the GIF:
 
-1. The browser requests `/load.css`. Its `load` hook calls `addWatchFile(color.txt)`. The module node for `/load.css` does not exist yet, so Vite drops the file.
-2. Vite creates the node for `/load.css` after `load`. The node has no dependency.
-3. The browser requests `/transform.css`. It calls `addWatchFile(color.txt)` in `transform`. Its node exists by then, so Vite records the dependency.
-4. `color.txt` changes from hotpink to lightblue.
-5. Vite updates the modules that depend on `color.txt`. Only `/transform.css` does, so only its box turns blue.
+1. The browser requests `/color.css`. Its `load` hook calls `addWatchFile(color.txt)`. The module node for `/color.css` does not exist yet, so Vite drops the file.
+2. Vite creates the node for `/color.css` after `load`. The node does not depend on `color.txt`.
+3. `color.txt` changes from hotpink to lightblue. No module depends on it, so Vite sends no update.
 
-![Expected: both boxes lightblue. Actual: the load box stays hotpink, the transform box turns lightblue](result.png)
-
-| box                     | expected  | actual    |
-| ----------------------- | --------- | --------- |
-| `addWatchFile` in `load`      | lightblue | hotpink ✗ |
-| `addWatchFile` in `transform` | lightblue | lightblue ✓ |
+![Expected: the box turns lightblue. Actual: it stays hotpink](result.png)
 
 ## Try it
 
@@ -59,3 +52,5 @@ Creating the node before `load` fixes the repro:
 + mod ??= await moduleGraph._ensureEntryFromUrl(url, undefined, resolved)
   const loadResult = await pluginContainer.load(id)
 ```
+
+Calling `addWatchFile` in `transform` instead also works, because the node exists by then.
