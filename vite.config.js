@@ -14,7 +14,7 @@ export default {
       load(id) {
         if (!id.includes("/color.css")) return;
         this.addWatchFile(colorFile);
-        return `div { background: ${readFileSync(colorFile, "utf8").trim()}; }`;
+        return `main { background: ${readFileSync(colorFile, "utf8").trim()}; }`;
       },
     },
   ],
