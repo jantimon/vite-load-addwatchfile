@@ -43,6 +43,14 @@ if (module) {
 
 [`loadAndTransform`](https://github.com/vitejs/vite/blob/v8.3.5/packages/vite/src/node/server/transformRequest.ts#L269) calls `load` first and creates the node afterwards ([line 354](https://github.com/vitejs/vite/blob/v8.3.5/packages/vite/src/node/server/transformRequest.ts#L354)).
 
+[@bluwy](https://github.com/bluwy) found the same cause in [vitejs/vite#18103](https://github.com/vitejs/vite/pull/18103), a PR with a failing test for this case:
+
+> The `module` does not exist until the `load` hook finishes
+
+He closed it with:
+
+> Probably still an issue, but no one seems to have reported this so it's probably not important enough to fix this. Also, it's easier to track this in an issue.
+
 A stylesheet that JS imports does not hit this: Vite creates its node while it analyzes the importer, before the browser requests the css. A stylesheet that only a `<link>` loads does, and SSR frameworks render such links in dev, Qwik for example.
 
 Creating the node before `load` fixes the repro:
