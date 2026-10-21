@@ -1,18 +1,14 @@
 # Vite: `addWatchFile` in `load` is lost on a module's first request
 
-![Step by step: the load hook calls addWatchFile before the module node exists, so Vite drops color.txt. After color.txt changes, Vite sends no update. Expected: the box turns lightblue. Actual: it stays hotpink](hmr.gif)
+![color.txt changes from hotpink to lightblue. The box in the browser stays hotpink, expected lightblue](hmr.gif)
 
 `index.html` links the stylesheet `/color.css`. A plugin in `vite.config.js` makes it from `color.txt`, a file with one color, and calls `this.addWatchFile("color.txt")` in `load`. When `color.txt` changes, the box should take the new color. It keeps the old one.
 
-## Step by step
-
-The same steps as the GIF:
+## What happens
 
 1. The browser requests `/color.css`. Its `load` hook calls `addWatchFile(color.txt)`. The module node for `/color.css` does not exist yet, so Vite drops the file.
 2. Vite creates the node for `/color.css` after `load`. The node does not depend on `color.txt`.
 3. `color.txt` changes from hotpink to lightblue. No module depends on it, so Vite sends no update.
-
-![Expected: the box turns lightblue. Actual: it stays hotpink](result.png)
 
 ## Try it
 
