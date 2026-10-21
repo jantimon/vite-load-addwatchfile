@@ -1,6 +1,6 @@
 # Vite: `addWatchFile` in `load` is lost on a module's first request
 
-![color.txt changes from hotpink to lightblue. The box in the browser stays hotpink, expected lightblue](hmr.gif)
+![color.txt changes from hotpink to lightblue. The Vite plugin calls addWatchFile("color.txt") in load, but Vite sends no update, so the box in the browser stays hotpink, expected lightblue](hmr.gif)
 
 `index.html` links the stylesheet `/color.css`. A plugin in `vite.config.js` makes it from `color.txt`, a file with one color, and calls `this.addWatchFile("color.txt")` in `load`. When `color.txt` changes, the box should take the new color. It keeps the old one.
 
